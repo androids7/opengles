@@ -18,6 +18,9 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 	Context context;
 	float x=0f,y=0f,z=0f;
 	
+	float startx=0,starty=0,endx=0,endy=0;
+	
+	
 	
 	public MRender(Context context){
 		this.context=context;
@@ -35,6 +38,11 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 	public void onSurfaceChanged(GL10 gl, int p2, int p3)
 	{
 		gl.glViewport(0,0,p2,p3);
+		
+
+		
+		//onDrawFrame(gl);
+		
 	}
 
 	@Override
@@ -85,43 +93,109 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, myTexture);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textureid);
 
-		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
 		
-		GLU.gluLookAt(gl,0,0,10,1,2,10,0,1,0);
+		GLU.gluLookAt(gl,x,y,0,0,0,1,1,1,0);
+		
+		/*
+		gl.glPushMatrix();
+		gl.glTranslatef(0,0,0);
+		gl.glPopMatrix();
+		*/
+		
+		//gl.glRotatef(x,x,y,0);
+		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+	
 	}
 
 	@Override
 	public boolean onTouch(View p1, MotionEvent p2)
 	{
 	
-		float startx=0,starty=0,endx=0,endy=0;
-		if (p2.ACTION_DOWN==p2.getAction()){
+		
+		if (p2.getAction()==MotionEvent.ACTION_DOWN)
+		{
 			startx=p2.getX();
 			starty=p2.getY();
 		}
-		if(p2.ACTION_UP==p2.getAction())
+		
+		if (p2.getAction()==MotionEvent.ACTION_UP)
 		{
+
+			
+			
 			endx=p2.getX();
 			endy=p2.getY();
+			if(endx>startx)
+			{
+				x+=0.1;
+			}
+			if (endx<startx){
+				x-=0.1;
+			}
+			
+			startx=0;
+			endx=0;
+
+
+			if(starty>endy)
+			{
+				y-=0.1;
+
+			}
+			if(starty<endy)
+			{
+				y+=0.1;
+
+			}
+		
+			
+			
 		}
 		
-		if(startx>=endx)
-		{
-			x+=10;
-		}
-		else{
-			x-=10;
-		}
 		
-		if(starty>=endy)
-		{
-			y+=10;
+		/*
+		switch(p2.getAction()){
+			case MotionEvent.ACTION_DOWN:
+				
+			startx=p2.getX();
+			starty=p2.getY();
+			
+			break;
+			
+			
+			case MotionEvent.ACTION_UP:
+				
+				endx=p2.getX();
+				endy=p2.getY();
+				if(startx>endx)
+				{
+					x-=0.1;
+				}
+				if (endx>startx){
+					x+=0.1;
+				}
+
+				
+				if(starty>endy)
+				{
+					y+=0.1;
+					
+				}
+				if(starty<endy)
+				{
+					y-=0.1;
+					
+				}
+				
+				
+			break;
 		}
-		else{
-			y-=10;
-		}
+			
+			*/
 		
-		return false;
+		
+		
+		return true;
 	}
 
 
