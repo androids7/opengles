@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity
 		getSupportActionBar().hide();
 		glview=new GLSurfaceView(this);
 		
-		mrender=new MRender(this);
+		mrender=new MRender(this,30,0,0,0);
 		glview.setRenderer(mrender);
 		glview.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);//设置渲染模式为主动渲染   
        

@@ -20,9 +20,9 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 	
 	float startx=0,starty=0,endx=0,endy=0;
 	
-	
-	
-	public MRender(Context context){
+	int w,h;
+	//速度 音乐id 需要的分数  有多少个可以按
+	public MRender(Context context,int speed,int mp3,int needfen,int builnum){
 		this.context=context;
 		
 	}
@@ -38,9 +38,11 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 	public void onSurfaceChanged(GL10 gl, int p2, int p3)
 	{
 		gl.glViewport(0,0,p2,p3);
-		
+		w=p2;
+		h=p3;
 
 		
+	
 		//onDrawFrame(gl);
 		
 	}
@@ -48,7 +50,7 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 	@Override
 	public void onDrawFrame(GL10 gl)
 	{
-		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT|GLES20.GL_COLOR_BUFFER_BIT);
+		gl.glClear(GLES20.GL_DEPTH_BUFFER_BIT|GLES20.GL_COLOR_BUFFER_BIT);
 		gl.glLoadIdentity();
 		//gl.glTranslatef(-1.5f,0f,-6f);
 		float width=1f,height=1f;
@@ -64,7 +66,7 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 		};
 		float[] vertexs=new float[]
 		{
-			-width/2,height/2,0,
+			-width/2,height/2,0.5f,
 			-width/2,-height/2,0,
 			width/2,height/2,0,
 
@@ -92,9 +94,10 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 		
 		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, myTexture);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textureid);
-
 		
-		GLU.gluLookAt(gl,x,y,0,0,0,1,1,1,0);
+		gl.glMatrixMode(gl.GL_MODELVIEW);
+		
+		//GLU.gluLookAt(gl,1f,0,0,1,1,1,0,1,0);
 		
 		/*
 		gl.glPushMatrix();
@@ -102,9 +105,12 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 		gl.glPopMatrix();
 		*/
 		
-		//gl.glRotatef(x,x,y,0);
+		gl.glRotatef(x,y,0,-45);
 		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
-	
+		gl.glTranslatef(1f,0,0);
+		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+		
+		
 	}
 
 	@Override
@@ -127,10 +133,10 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 			endy=p2.getY();
 			if(endx>startx)
 			{
-				x+=0.1;
+				x+=10;
 			}
 			if (endx<startx){
-				x-=0.1;
+				x-=10;
 			}
 			
 			startx=0;
@@ -139,12 +145,12 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 
 			if(starty>endy)
 			{
-				y-=0.1;
+				y-=10;
 
 			}
 			if(starty<endy)
 			{
-				y+=0.1;
+				y+=10;
 
 			}
 		
