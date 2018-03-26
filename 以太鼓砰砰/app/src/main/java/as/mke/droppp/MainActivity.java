@@ -4,6 +4,7 @@ import android.app.*;
 import android.os.*;
 import android.opengl.*;
 import android.view.*;
+import android.widget.*;
 
 public class MainActivity extends Activity 
 {
@@ -17,7 +18,7 @@ public class MainActivity extends Activity
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		gl=new GLSurfaceView(this);
-		rd=new GLRender(this,30,0,0,0);
+		rd=new GLRender(this,30,0,0,R.raw.flowerdance);
 		gl.setRenderer(rd);
 		gl.setFocusable(true);
 		gl.setOnTouchListener(rd);
@@ -28,4 +29,29 @@ public class MainActivity extends Activity
 		
 		
     }
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event)
+	{
+		
+			if(keyCode==event.KEYCODE_BACK)
+			{
+				//Toast.makeText(getBaseContext(),"@@",0).show();
+				
+				System.exit(0);
+			}
+		
+		
+		return true;
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		// TODO: Implement this method
+		super.onDestroy();
+		
+	}
+	
+	
 }

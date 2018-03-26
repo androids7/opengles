@@ -106,6 +106,8 @@ public class MRender implements GLSurfaceView.Renderer,OnTouchListener
 		*/
 		
 		gl.glRotatef(x,y,0,-45);
+		gl.glTranslatef(0.5f,0,0);
+		
 		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
 		gl.glTranslatef(1f,0,0);
 		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);

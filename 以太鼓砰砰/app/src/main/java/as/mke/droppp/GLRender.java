@@ -9,14 +9,261 @@ import java.nio.*;
 import android.opengl.*;
 import java.io.*;
 import android.graphics.*;
+import java.util.*;
+import android.media.*;
 public class GLRender implements Renderer,OnTouchListener
 {
 
 	private Context context;
 	private boolean setRender;
-	private float x=0;
+	private float x=0,tx=1f;
 	
 	private Thread td;
+	
+	private boolean isPress=false;
+	
+	private List<Integer> list;
+	
+	private List<Float> position;
+	
+	
+	ByteBuffer vbb ;
+	ByteBuffer tbb;
+	
+	
+	float width=2f,height=0.25f;
+	int vcount=6;
+	int textureid;
+	int texturecircleid;
+	int texturecircle_pressid;
+	int tx_circle_green_id;
+
+	int tx_circle_blue_id;
+
+	int tx_circle_medium_id;
+
+	int tx_number_id;
+
+	FloatBuffer myVertex=null,button_vt,button_press_vt,circle_blue_vt,circle_green_vt,circle_medium_vt;
+	FloatBuffer myTexture=null,circle_tx=null,circle_press_tx=null;
+
+	FloatBuffer circle_green_tx=null,circle_blue_tx=null,circle_medium_tx=null,circle_long_tx=null;
+
+	float[] textures;
+	float[] vertexs;
+	
+	public static int int_fen_number=0;
+	
+	
+	Scores scores;
+	
+	
+	SoundPool soundpool;
+	int playid;
+	
+	int mp3res;
+	
+	MediaPlayer mediaplayer;
+	
+	public void initresid(GL10 gl)
+	{
+		
+		textures= new float[]
+		{
+			0,0,0,1,1,0,
+			1,0,0,1,1,1
+		};
+		
+		vertexs=new float[]
+		{
+			-width/2,height/2,0f,
+			-width/2,-height/2,0,
+			width/2,height/2,0,
+
+			width/2,height/2,0,
+			-width/2,-height/2,0,
+			width/2,-height/2,0
+		};
+		textureid=initTexture(gl,R.drawable.roll);
+		
+		
+		texturecircleid=initTexture(gl,R.drawable.circle);
+		texturecircle_pressid=initTexture(gl,R.drawable.circle_press);
+
+		tx_circle_green_id=initTexture(gl,R.drawable.circle_green);
+
+		tx_circle_blue_id=initTexture(gl,R.drawable.circle_blue);
+
+		tx_circle_medium_id=initTexture(gl,R.drawable.red_medium);
+		
+		
+		tx_number_id=initTexture(gl,R.drawable.number);
+		
+	}
+	
+	public void initbuf(){
+		vbb= ByteBuffer.allocateDirect(vertexs.length*4);
+        vbb.order(ByteOrder.nativeOrder());//设置字节顺序
+        myVertex = vbb.asFloatBuffer();//转换为int型缓冲
+        myVertex.put(vertexs);//向缓冲区中放入顶点坐标数据
+        myVertex.position(0);//设置缓冲区起始位置
+
+        tbb = ByteBuffer.allocateDirect(textures.length*4);
+        tbb.order(ByteOrder.nativeOrder());//设置字节顺序
+        myTexture = tbb.asFloatBuffer();//转换为int型缓冲
+        myTexture.put(textures);//向缓冲区中放入顶点坐标数据
+        myTexture.position(0);//设置缓冲区起始位置
+
+		
+		width=0.20f;
+		height=0.20f;
+
+		vertexs=new float[]
+		{
+			-width/2,height/2,0f,
+			-width/2,-height/2,0,
+			width/2,height/2,0,
+
+			width/2,height/2,0,
+			-width/2,-height/2,0,
+			width/2,-height/2,0
+		};
+		
+		
+		
+		vbb = ByteBuffer.allocateDirect(vertexs.length*4);
+        vbb.order(ByteOrder.nativeOrder());//设置字节顺序
+        button_vt = vbb.asFloatBuffer();//转换为int型缓冲
+        button_vt.put(vertexs);//向缓冲区中放入顶点坐标数据
+        button_vt.position(0);//设置缓冲区起始位置
+
+		
+        tbb = ByteBuffer.allocateDirect(textures.length*4);
+        tbb.order(ByteOrder.nativeOrder());//设置字节顺序
+        circle_tx = tbb.asFloatBuffer();//转换为int型缓冲
+        circle_tx.put(textures);//向缓冲区中放入顶点坐标数据
+        circle_tx.position(0);//设置缓冲区起始位置
+		
+		
+		
+		width=0.20f;
+		height=0.10f;
+
+		vertexs=new float[]
+		{
+			-width/2,height/2,0f,
+			-width/2,-height/2,0,
+			width/2,height/2,0,
+
+			width/2,height/2,0,
+			-width/2,-height/2,0,
+			width/2,-height/2,0
+		};
+
+		vbb = ByteBuffer.allocateDirect(vertexs.length*4);
+		vbb.order(ByteOrder.nativeOrder());//设置字节顺序
+		circle_green_vt = vbb.asFloatBuffer();//转换为int型缓冲
+		circle_green_vt.put(vertexs);//向缓冲区中放入顶点坐标数据
+		circle_green_vt.position(0);//设置缓冲区起始位置
+
+		tbb = ByteBuffer.allocateDirect(textures.length*4);
+		tbb.order(ByteOrder.nativeOrder());//设置字节顺序
+		circle_green_tx = tbb.asFloatBuffer();//转换为int型缓冲
+		circle_green_tx.put(textures);//向缓冲区中放入顶点坐标数据
+		circle_green_tx.position(0);//设置缓冲区起始位置
+
+		
+		width=0.20f;
+		height=0.10f;
+
+		vertexs=new float[]
+		{
+			-width/2,height/2,0f,
+			-width/2,-height/2,0,
+			width/2,height/2,0,
+
+			width/2,height/2,0,
+			-width/2,-height/2,0,
+			width/2,-height/2,0
+		};
+		
+		
+		vbb = ByteBuffer.allocateDirect(vertexs.length*4);
+		vbb.order(ByteOrder.nativeOrder());//设置字节顺序
+		circle_blue_vt = vbb.asFloatBuffer();//转换为int型缓冲
+		circle_blue_vt.put(vertexs);//向缓冲区中放入顶点坐标数据
+		circle_blue_vt.position(0);//设置缓冲区起始位置
+
+		tbb = ByteBuffer.allocateDirect(textures.length*4);
+		tbb.order(ByteOrder.nativeOrder());//设置字节顺序
+		circle_blue_tx = tbb.asFloatBuffer();//转换为int型缓冲
+		circle_blue_tx.put(textures);//向缓冲区中放入顶点坐标数据
+		circle_blue_tx.position(0);//设置缓冲区起始位置
+
+		
+
+		width=0.90f;
+		height=0.10f;
+
+		vertexs=new float[]
+		{
+			-width/2,height/2,0f,
+			-width/2,-height/2,0,
+			width/2,height/2,0,
+
+			width/2,height/2,0,
+			-width/2,-height/2,0,
+			width/2,-height/2,0
+		};
+		
+		
+		vbb = ByteBuffer.allocateDirect(vertexs.length*4);
+		vbb.order(ByteOrder.nativeOrder());//设置字节顺序
+		circle_medium_vt = vbb.asFloatBuffer();//转换为int型缓冲
+		circle_medium_vt.put(vertexs);//向缓冲区中放入顶点坐标数据
+		circle_medium_vt.position(0);//设置缓冲区起始位置
+
+		tbb = ByteBuffer.allocateDirect(textures.length*4);
+		tbb.order(ByteOrder.nativeOrder());//设置字节顺序
+		circle_medium_tx = tbb.asFloatBuffer();//转换为int型缓冲
+		circle_medium_tx.put(textures);//向缓冲区中放入顶点坐标数据
+		circle_medium_tx.position(0);//设置缓冲区起始位置
+
+		
+		
+		width=0.20f;
+		height=0.20f;
+
+		vertexs=new float[]
+		{
+			-width/2,height/2,0f,
+			-width/2,-height/2,0,
+			width/2,height/2,0,
+
+			width/2,height/2,0,
+			-width/2,-height/2,0,
+			width/2,-height/2,0
+		};
+
+		
+		
+		
+		vbb = ByteBuffer.allocateDirect(vertexs.length*4);
+        vbb.order(ByteOrder.nativeOrder());//设置字节顺序
+        button_press_vt = vbb.asFloatBuffer();//转换为int型缓冲
+        button_press_vt.put(vertexs);//向缓冲区中放入顶点坐标数据
+        button_press_vt.position(0);//设置缓冲区起始位置
+
+        tbb = ByteBuffer.allocateDirect(textures.length*4);
+        tbb.order(ByteOrder.nativeOrder());//设置字节顺序
+        circle_press_tx = tbb.asFloatBuffer();//转换为int型缓冲
+        circle_press_tx.put(textures);//向缓冲区中放入顶点坐标数据
+        circle_press_tx.position(0);//设置缓冲区起始位置
+		
+		
+		
+	}
+	
 	
 	public GLRender(Context c,int speed,int needfen,int makenum,int mp3id)
 	{
@@ -24,41 +271,328 @@ public class GLRender implements Renderer,OnTouchListener
 		td=new Thread()
 		{
 			public void run(){
+				
+				while(true)
+			{
+					
+				
+				/*
+				
+				滚动方块
+				*/
+				
+				for(int si=0;si<position.size();si++)
+				{
+					
+					tx=position.get(si);
+					if(tx<=-2)
+					{
+						
+						position.set(si,2f+si*1);
+						Random rd=new Random();
+						list.set(si,rd.nextInt(3));
+							
+						
+					}
+					else{
+						tx-=0.03f;
+						position.set(si,tx);
+						
+						
+					}
+				}
+				
+				
+				
+					
+				
+				
+				
+				
+				
+				
+				
+				
+				/*   滚动*/
 				if(x<=0)
 				{
-					x=2f;
+					x=1f;
+				    
+					
 				}
 				else{
 					x-=0.05f;
 				}
 				try
 				{
-					sleep(200);
+					sleep(20);
 				}
 				catch (InterruptedException e)
 				{}
 			}
+			
+		}
 		};
 		
+		list=new ArrayList<Integer>();
+		
+		position=new ArrayList<Float>();
+		
+		for(int i=0;i<3;i++)
+		{
+			position.add(2f+i*1);
+			Random rd=new Random();
+			list.add(i,rd.nextInt(3));
+			
+		}
+		
+		
+		soundpool=new SoundPool(1,AudioManager.STREAM_MUSIC,0);
+		playid=soundpool.load(context,R.raw.click,0);
+		
+		
+		this.mp3res=mp3id;
+		mediaplayer=MediaPlayer.create(context,mp3id);
+		
+		
 	}
+	
+	
+	public void drawRoll(GL10 gl)
+	{
+		
+		gl.glMatrixMode(gl.GL_MODELVIEW);
+				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, myVertex);
+
+		gl.glEnable(GL10.GL_TEXTURE_2D);
+		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+
+		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, myTexture);
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, textureid);
+
+
+
+
+
+
+
+
+		for(int i=0;i<3;i++)
+		{
+
+
+			gl.glLoadIdentity();
+			gl.glTranslatef(x-i,0,0f);
+			gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+
+		}
+	}
+	
+	
+	public void drawButton(GL10 gl)
+	{
+		/*
+
+		 按钮
+		 */
+
+		
+
+        
+		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, button_press_vt);
+		/*
+		 gl.glEnable(GL10.GL_TEXTURE_2D);
+		 gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		 */
+		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, circle_tx);
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, texturecircleid);
+
+
+
+		gl.glLoadIdentity();
+		gl.glTranslatef(-0.7f,0,0f);
+		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+
+
+
+		
+	}
+	
+	
+	
+	public void drawMake(GL10 gl){
+		
+		for(int i=0;i<list.size();i++){
+
+			int type=list.get(i);
+			switch(type){
+				case 0:
+
+
+					/*
+
+					 绿色圆
+					 */
+
+					
+			gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+					gl.glVertexPointer(3, GL10.GL_FLOAT, 0, circle_green_vt);
+					/*
+					 gl.glEnable(GL10.GL_TEXTURE_2D);
+					 gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+					 */
+					gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, circle_green_tx);
+					gl.glBindTexture(GL10.GL_TEXTURE_2D, tx_circle_green_id);
+
+
+
+
+					gl.glLoadIdentity();
+					gl.glTranslatef(position.get(i),0,0f);
+					gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+
+					break;
+
+				case 1:
+
+
+
+
+
+
+
+					/*
+
+					 蓝色圆
+					 */
+
+					
+
+				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+					gl.glVertexPointer(3, GL10.GL_FLOAT, 0, circle_blue_vt);
+					/*
+					 gl.glEnable(GL10.GL_TEXTURE_2D);
+					 gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+					 */
+					gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, circle_blue_tx);
+					gl.glBindTexture(GL10.GL_TEXTURE_2D, tx_circle_blue_id);
+
+
+
+
+					gl.glLoadIdentity();
+					gl.glTranslatef(position.get(i),0,0f);
+					gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+
+
+					break;
+
+
+				case 2:
+
+
+
+					/*
+
+					 中圆
+					 */
+
+
+				    gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+					gl.glVertexPointer(3, GL10.GL_FLOAT, 0, circle_medium_vt);
+					/*
+					 gl.glEnable(GL10.GL_TEXTURE_2D);
+					 gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+					 */
+					gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, circle_medium_tx);
+					gl.glBindTexture(GL10.GL_TEXTURE_2D, tx_circle_medium_id);
+
+
+
+					gl.glLoadIdentity();
+					gl.glTranslatef(position.get(i),0,0f);
+					gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+
+
+
+					break;
+			}
+		}
+		
+	}
+	
+	public void drawPress(GL10 gl){
+		
+
+
+		/*
+
+		 按下按钮
+
+		 */
+
+		
+
+		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, button_press_vt);
+		/*
+		 gl.glEnable(GL10.GL_TEXTURE_2D);
+		 gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+		 */
+		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, circle_press_tx);
+		gl.glBindTexture(GL10.GL_TEXTURE_2D, texturecircle_pressid);
+
+		if(isPress==true){
+
+
+
+			gl.glLoadIdentity();
+			gl.glTranslatef(-0.7f,0,0f);
+			gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
+
+			
+			
+			
+			
+		
+		
+		
+		}
+		
+	}
+	
+	
+	
 	
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig p2)
 	{
 		//gl.glEnable(GL10.GL_DEPTH_TEST);         
-		gl.glClearColor(1,0,0,0);
+		gl.glClearColor(0,0,0,0);
+		            
+		
+		gl.glEnable(GL10.GL_ALPHA);
+		initresid(gl);
+		
+		initbuf();
+		scores=new Scores(tx_number_id,this);
+	    mediaplayer.setLooping(true);
+		mediaplayer.start();
 	
 		td.start();
+		
 	}
 
 	@Override
-	public void onSurfaceChanged(GL10 gl, int width, int height)
+	public void onSurfaceChanged(GL10 gl, int widths, int heights)
 	{
-		float radiu=(float)(width/height);
+		float radiu=(float)(widths/heights);
 		//gl.glMatrixMode(GL10.GL_PROJECTION);
 		//gl.glLoadIdentity();
-		gl.glViewport(0,0,width,height);
-		//gl.glFrustumf(radiu,-radiu,-1.1f,0.9f,1f,80f);
+		gl.glViewport(0,0,widths,heights);
+		gl.glFrustumf(radiu,-radiu,-1.1f,0.9f,1f,80f);
 		
 		
 	}
@@ -74,92 +608,112 @@ public class GLRender implements Renderer,OnTouchListener
 		*/
 		
 		
+		
 		gl.glClear(GLES20.GL_DEPTH_BUFFER_BIT|GLES20.GL_COLOR_BUFFER_BIT);
+		
+		
+		gl.glMatrixMode(gl.GL_MODELVIEW);
 		
 		//gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		//gl.glTranslatef(-1.5f,0f,-6f);
-		float width=2f,height=0.25f;
-		int vcount=6;
-		int textureid=initTexture(gl,R.drawable.roll);
-
-		FloatBuffer myVertex=null;
-		FloatBuffer myTexture=null;
-		float[] textures= new float[]
-		{
-			0,0,0,1,1,0,
-			1,0,0,1,1,1
-		};
-		float[] vertexs=new float[]
-		{
-			-width/2,height/2,0f,
-			-width/2,-height/2,0,
-			width/2,height/2,0,
-
-			width/2,height/2,0,
-			-width/2,-height/2,0,
-			width/2,-height/2,0
-		};
-        ByteBuffer vbb = ByteBuffer.allocateDirect(vertexs.length*4);
-        vbb.order(ByteOrder.nativeOrder());//设置字节顺序
-        myVertex = vbb.asFloatBuffer();//转换为int型缓冲
-        myVertex.put(vertexs);//向缓冲区中放入顶点坐标数据
-        myVertex.position(0);//设置缓冲区起始位置
-
-        ByteBuffer tbb = ByteBuffer.allocateDirect(textures.length*4);
-        tbb.order(ByteOrder.nativeOrder());//设置字节顺序
-        myTexture = tbb.asFloatBuffer();//转换为int型缓冲
-        myTexture.put(textures);//向缓冲区中放入顶点坐标数据
-        myTexture.position(0);//设置缓冲区起始位置
-
-		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, myVertex);
-
-		gl.glEnable(GL10.GL_TEXTURE_2D);
-		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
-
-		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, myTexture);
-		gl.glBindTexture(GL10.GL_TEXTURE_2D, textureid);
-
-		gl.glMatrixMode(gl.GL_MODELVIEW);
-
-		
-
-
-		//GLU.gluLookAt(gl,0,0,0f,0,0,1,0,1,0);
-		
-
 		gl.glPushMatrix();
-		//gl.glTranslatef(x,0,0f);
+		drawRoll(gl);
+		gl.glPopMatrix();
+		drawButton(gl);
+	
 		
 	
-		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
-		gl.glPopMatrix();
+		drawMake(gl);
 		
 		
-		gl.glPushMatrix();
-		gl.glTranslatef(2f,-1f,0f);
-		
-		gl.glDrawArrays(GL10.GL_TRIANGLES, 0, vcount);
-		
-		gl.glPopMatrix();
+		drawPress(gl);
 
+		/*
+		gl.glPushMatrix();
+		gl.glTranslatef(1f, 1.5f, 0f);
+		*/
+		scores.drawSelf(gl);
+		//gl.glPopMatrix();
+		
+		
+		//GLU.gluLookAt(gl,0,0,0f,0,0,1,0,1,0);
+	
 		
 		
 		
 		
-		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		
-		gl.glDisable(GL10.GL_TEXTURE_2D);
 		
-		gl.glDisable(GL10.GL_BLEND);
+		
 		
 	}
 
 	@Override
-	public boolean onTouch(View p1, MotionEvent p2)
-	{
-		
+	public boolean onTouch(View p1, MotionEvent p2){
+	
+	isPress=false;
+		switch(p2.getAction()){
+			
+			case MotionEvent.ACTION_DOWN:
+				
+			isPress=true;
+			
+				for(int i=0;i<position.size();i++){
+					float ii=position.get(i);
+
+					switch(list.get(i)){
+
+						case 0:
+
+
+							if(ii<=-0.5f&&ii>=-0.8f){
+								int_fen_number+=10;
+								soundpool.play(playid,1.0f,1.0f,0,0,1);
+							}
+
+							
+							break;
+
+
+
+						case 1:
+
+							if(ii<=-0.5f&&ii>=-0.8f){
+								int_fen_number+=10;
+								
+								soundpool.play(playid,1.0f,1.0f,0,0,1);
+							}
+
+
+							break;
+
+
+
+						case 2:
+
+
+							if(ii<=-0.5f&&ii>=-1f){
+								int_fen_number+=10;
+								soundpool.play(playid,1.0f,1.0f,0,0,1);
+								
+							}
+
+
+							break;
+					}
+					}
+			
+			
+			
+			break;
+			
+			case MotionEvent.ACTION_UP:
+				
+			isPress=false;
+			
+			break;
+		}
 		
 		return true;
 	}
